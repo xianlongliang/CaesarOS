@@ -10,7 +10,9 @@
  */
 
 #include "../include/multiboot2.h"
-#include <stdio.h>
+#include "../include/lib64/logging.h"
+
+#define  NULL 0
 
 reserved_areas_t build_reserved_areas();
 static multiboot_info_t* saved_mbi = NULL;
@@ -29,7 +31,7 @@ static multiboot_tag_mmap_t* mmap = NULL;
 void multiboot_init(multiboot_info_t* mbi)
 {
 	saved_mbi = mbi;
-	//reserved_areas = build_reserved_areas();
+	reserved_areas = build_reserved_areas();
 }
 
 multiboot_tag_framebuffer_t* multiboot_get_framebuffer()
@@ -64,14 +66,14 @@ void* multiboot_find(uint16_t type)
 	for (tag = (multiboot_tag_t*)saved_mbi->tags;
 		tag->type != MULTIBOOT_TAG_TYPE_END;
 		tag = (multiboot_tag_t*)((uint8_t*)tag + ((tag->size + 7) & ~7))) {
-		//CORE_DEBUG("found tag with type=%d", tag->type);
+		pr_debug("found tag with type=%d\n", tag->type);
 		if (tag->type == type) {
-			//CORE_DEBUG("found tag for type=%d", type);
+			pr_debug("found tag for type=%d\n", type);
 			return tag;
 		}
 	}
 
-	//CORE_DEBUG("could not find tag for type=%d", type);
+	pr_debug("could not find tag for type=%d\n", type);
 	return NULL;
 }
 
@@ -84,43 +86,43 @@ reserved_areas_t build_reserved_areas() {
                                 .start = 0,
                                 .end = 0 };
 
-  	//CORE_DEBUG("announced MBI size %#x", saved_mbi->size);
+  	pr_debug("announced MBI size %#x\n", saved_mbi->size);
 
   	for (tag = (multiboot_tag_t*)saved_mbi->tags; tag->type != MULTIBOOT_TAG_TYPE_END;
     	tag = (multiboot_tag_t*)((uint8_t*)tag + ((tag->size + 7) & ~7))) {
-    	//CORE_DEBUG("found tag with type=%d", tag->type);
+    	pr_debug("found tag with type=%d\n", tag->type);
 
     	switch (tag->type) {
     		case MULTIBOOT_TAG_TYPE_CMDLINE: {
         		cmdline = ((multiboot_tag_string_t*)tag)->string;
-        		//CORE_DEBUG("command line=%s", cmdline);
+        		pr_debug("command line=%s\n", cmdline);
         		break;
     		}
 
       		case MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME:
-        		//CORE_DEBUG("boot loader name=%s", ((multiboot_tag_string_t*)tag)->string);
+        		pr_debug("boot loader name=%s\n", ((multiboot_tag_string_t*)tag)->string);
         		break;
 
       		case MULTIBOOT_TAG_TYPE_MODULE: {
         		reserved.end = ((multiboot_tag_module_t*)tag)->mod_end;
-        		/*CORE_DEBUG("module at %p-%p with command line=%s",
+        		pr_debug("module at %p-%p with command line=%s\n",
                 ((multiboot_tag_module_t*)tag)->mod_start,
                 ((multiboot_tag_module_t*)tag)->mod_end,
-                ((multiboot_tag_module_t*)tag)->cmdline);*/
+                ((multiboot_tag_module_t*)tag)->cmdline);
         		break;
       		}
 
     		case MULTIBOOT_TAG_TYPE_BASIC_MEMINFO:
-        		/*CORE_DEBUG("mem_lower = %dKB, mem_upper = %dKB",
+        		pr_debug("mem_lower = %dKB, mem_upper = %dKB\n",
                 ((multiboot_tag_basic_meminfo_t*)tag)->mem_lower,
-                ((multiboot_tag_basic_meminfo_t*)tag)->mem_upper);*/
+                ((multiboot_tag_basic_meminfo_t*)tag)->mem_upper);
         		break;
 
     		case MULTIBOOT_TAG_TYPE_BOOTDEV:
-        		/*CORE_DEBUG("boot device %#x, %u, %u",
+        		pr_debug("boot device %#x, %u, %u\n",
                 ((multiboot_tag_bootdev_t*)tag)->biosdev,
                 ((multiboot_tag_bootdev_t*)tag)->slice,
-                ((multiboot_tag_bootdev_t*)tag)->part);*/
+                ((multiboot_tag_bootdev_t*)tag)->part);
         		break;
 
     		case MULTIBOOT_TAG_TYPE_MMAP: {
@@ -129,32 +131,32 @@ reserved_areas_t build_reserved_areas() {
              		(uint8_t*)entry < (uint8_t*)tag + tag->size;
              		entry = (multiboot_mmap_entry_t*)((uint64_t)entry +
                     ((multiboot_tag_mmap_t*)tag)->entry_size)) {
-          			/*CORE_DEBUG("mmap entry: base_addr = %p, length = %#x, type = %#x",
+          			pr_debug("mmap entry: base_addr = %p, length = %#x, type = %#x\n",
                     entry->addr,
                     entry->len,
-                    entry->type);*/
+                    entry->type);
         		}
         		break;
       		}
 
       		case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
         		framebuffer = (multiboot_tag_framebuffer_t*)tag;
-        		/*CORE_DEBUG("framebuffer framebuffer_addr=%p common_addr=%p",
+        		pr_debug("framebuffer framebuffer_addr=%p common_addr=%p\n",
                    framebuffer->common.framebuffer_addr,
-                   (void*)&framebuffer->common);*/
+                   (void*)&framebuffer->common);
         		break;
     		}
 
     		case MULTIBOOT_TAG_TYPE_APM:
-        		//CORE_DEBUG("%s", "apm");
+        		pr_debug("%s\n", "apm");
         		break;
 
       		case MULTIBOOT_TAG_TYPE_ACPI_OLD:
-        		//CORE_DEBUG("%s", "acpi old");
+        		pr_debug("%s\n", "acpi old");
         		break;
 
     		case MULTIBOOT_TAG_TYPE_ACPI_NEW:
-        		//CORE_DEBUG("%s", "acpi new");
+        		pr_debug("%s\n", "acpi new");
         		break;
 
     		case MULTIBOOT_TAG_TYPE_ELF_SECTIONS: {
@@ -164,13 +166,13 @@ reserved_areas_t build_reserved_areas() {
           			i < ((multiboot_tag_elf_sections_t*)tag)->num;
 					elf = (multiboot_elf_sections_entry_t*)((uint64_t)elf +
 					((multiboot_tag_elf_sections_t*)tag)->section_size), i++) {
-          			/*CORE_DEBUG("elf section #%02d addr = %p, type = %#x, size = %#x, "
-                    "flags = %#x",
+          			pr_debug("elf section #%02d addr = %p, type = %#x, size = %#x, "
+                    "flags = %#x\n",
                     i,
                     elf->addr,
                     elf->type,
                     elf->size,
-                    elf->flags);*/
+                    elf->flags);
 
         			if (elf->type == MULTIBOOT_ELF_SECTION_TYPE_NULL) {
             			continue;
@@ -188,23 +190,23 @@ reserved_areas_t build_reserved_areas() {
       		}
 
 			case MULTIBOOT_TAG_TYPE_NETWORK:
-        		//CORE_DEBUG("%s", "network");
+        		pr_debug("%s\n", "network");
         		break;
 
       		case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
-        		//CORE_DEBUG("%s", "load base addr");
+        		pr_debug("%s\n", "load base addr");
         		break;
 
       		default:
 				break;
-        		//CORE_DEBUG("tag %#x, size %#x", tag->type, tag->size);
+        		pr_debug("tag %#x, size %#x\n", tag->type, tag->size);
     	}
   	}
 
 	tag = (multiboot_tag_t*)((uint8_t*)tag + ((tag->size + 7) & ~7));
 	reserved.multiboot_end = (uint64_t)tag;
 
-	//CORE_DEBUG("total MBI size %#x", (uint64_t)tag - (uint64_t)saved_mbi);
+	pr_debug("total MBI size %#x\n", (uint64_t)tag - (uint64_t)saved_mbi);
 
 	reserved.start = reserved.kernel_start;
 
@@ -212,14 +214,14 @@ reserved_areas_t build_reserved_areas() {
 		reserved.end = reserved.multiboot_end;
 	}
 
-	/*CORE_DEBUG("kernel_start=%#x kernel_end=%#x multiboot_start=%#x "
-        "multiboot_end=%#x reserved start=%#x end=%#x",
+	pr_debug("kernel_start=%#x kernel_end=%#x multiboot_start=%#x "
+        "multiboot_end=%#x reserved start=%#x end=%#x\n",
         reserved.kernel_start,
         reserved.kernel_end,
         reserved.multiboot_start,
         reserved.multiboot_end,
         reserved.start,
-        reserved.end);*/
+        reserved.end);
 
 	return reserved;
 }

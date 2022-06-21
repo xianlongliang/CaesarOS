@@ -1,0 +1,5 @@
+make --dry-run --keep-going --print-directory
+make: Entering directory '/home/caesar/study/os/CaesarOS'
+make: Nothing to be done for 'all'.
+make: Leaving directory '/home/caesar/study/os/CaesarOS'
+ 

@@ -1,5 +1,5 @@
 arch ?= x86_64
-kernel := build/kernel-$(arch).bin
+kernel := build/CaesarOS-$(arch).bin
 iso := build/CaesarOS-$(arch).iso
 
 linker_script := $(arch)/linker.ld
@@ -21,7 +21,7 @@ clean:
 	@rm -r build
 
 run: $(iso)
-	@qemu-system-x86_64 -cdrom $(iso)
+	@qemu-system-x86_64 -serial stdio -cdrom $(iso) -m 8192M
 
 iso: $(iso)
 

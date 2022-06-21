@@ -12,6 +12,9 @@ start:
     ;pass it to our kernel.
     mov edi, ebx
 
+    ; `eax` points magic number
+    mov esi, eax
+
     ; various checks before we can move on.
     call check_multiboot
     call check_cpuid
@@ -255,8 +258,8 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
 
-    mov rax, 0x2f592f412f4b2f4f
-    mov qword [0xb8000], rax
+    ;mov rax, 0x2f592f412f4b2f4f
+    ;mov qword [0xb8000], rax
 
     call kmain
 

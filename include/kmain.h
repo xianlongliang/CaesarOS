@@ -20,6 +20,6 @@
   * @param addr the multiboot info address
   */
 
-  void kmain(uintptr_t addr) __asm__("kmain");
+  void kmain(uintptr_t addr, uint32_t magic) __asm__("kmain");
 
 #endif
